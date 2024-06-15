@@ -1,4 +1,4 @@
-import fs from "fs";
+import fs from "fs"; // inbuilt
 
 const createFile = () => {
   console.log("Creating file");
