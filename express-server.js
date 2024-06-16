@@ -1,11 +1,20 @@
 import express from "express";
-import studentsRouter from "./routes/students.js";
+
+import connectToDb from "./db-utils/mongodb-connection.js";
+
+// import studentsRouter from "./routes/students.js";
 import teachersRouter from "./routes/teachers.js";
+import studentsDbRouter from "./routes/students-db.js";
+import teachersDbRouter from "./routes/teachers-db.js";
 
 const server = express();
 
 // Body Parsing Middleware
 server.use(express.json());
+
+// Connecting to the DB before server starts
+// Top Level Await
+await connectToDb();
 
 server.get("/", (req, res) => {
   res.send({ message: "Hello FSD56WE-TAMIL" });
@@ -28,8 +37,8 @@ server.post("/", (req, res) => {
 
 // Use the router middleware into the server
 //          base-path    Router Obje
-server.use("/students", studentsRouter);
-server.use("/teachers", teachersRouter);
+server.use("/students", studentsDbRouter);
+server.use("/teachers", teachersDbRouter);
 
 const port = 8000;
 

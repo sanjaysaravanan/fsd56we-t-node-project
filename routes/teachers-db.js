@@ -1,28 +1,35 @@
 // APIs for CRUD operations specific to teachers object
 import express from "express";
 
-import { teachers } from "./local-memory.js";
+import { db } from "../db-utils/mongodb-connection.js";
 
 // in-memory array for storing the teachers data
 // ToDo: Change this to store in DB
 // const teachers = [];
 
+const collection = db.collection("teachers");
+
 // Router for the teachers
-const teachersRouter = express.Router(); // sample instance of the server
+const teachersDbRouter = express.Router(); // sample instance of the server
 
 // Read all the teachers
-teachersRouter.get("/", (req, res) => {
+teachersDbRouter.get("/", async (req, res) => {
   const { studentId } = req.query;
   try {
     if (studentId) {
-      const tempTchs = teachers.filter((teacher) =>
-        teacher.students.includes(studentId)
+      const teacher = await collection.findOne(
+        { students: { $in: [studentId] } },
+        { projection: { _id: 0 } }
       );
+
       res.send({
         msg: "Teacher Info for a student " + studentId,
-        teacher: tempTchs[0],
+        teacher,
       });
     } else {
+      const teachers = await collection
+        .find({}, { projection: { _id: 0 } })
+        .toArray();
       res.send({ msg: "Info about all the teachers", teachers });
     }
   } catch (err) {
@@ -31,11 +38,14 @@ teachersRouter.get("/", (req, res) => {
 });
 
 // Read info about a individual teacher
-teachersRouter.get("/:teacherId", (req, res) => {
+teachersDbRouter.get("/:teacherId", async (req, res) => {
   const teacherId = req.params.teacherId;
 
   try {
-    const stuData = teachers.find((stu) => stu.id === teacherId);
+    const stuData = await collection.findOne(
+      { id: teacherId },
+      { projection: { _id: 0 } }
+    );
 
     if (stuData) {
       res.send({ ...stuData });
@@ -48,7 +58,7 @@ teachersRouter.get("/:teacherId", (req, res) => {
 });
 
 // Create a new teacher
-teachersRouter.post("/", (req, res) => {
+teachersDbRouter.post("/", async (req, res) => {
   const teacherInfo = {
     ...req.body,
     id: Date.now().toString(),
@@ -56,7 +66,7 @@ teachersRouter.post("/", (req, res) => {
   };
 
   try {
-    teachers.push(teacherInfo);
+    await collection.insertOne(teacherInfo);
     res.send({ msg: "Teacher Created Successfully" });
   } catch (err) {
     res.status(500).send({ msg: "Internal Server Error" });
@@ -65,23 +75,26 @@ teachersRouter.post("/", (req, res) => {
 
 // Update a single teacher
 // use this api for assigning a teacher or changing info of the teacher
-teachersRouter.put("/:teacherId", (req, res) => {
+teachersDbRouter.put("/:teacherId", async (req, res) => {
   const updateInfo = req.body;
   const teacherId = req.params.teacherId;
 
   try {
     // Logic to update a single teacher
-    const index = teachers.findIndex((stu) => stu.id === teacherId);
-    const stuObj = teachers.find((stu) => stu.id === teacherId);
+    const stuObj = await collection.findOne({ id: teacherId });
 
     if (stuObj) {
-      teachers[index] = {
-        ...stuObj,
-        ...updateInfo,
-      };
-      res.send({ msg: "Student Updated Successfully" });
+      await collection.updateOne(
+        {
+          id: teacherId,
+        },
+        {
+          $set: updateInfo,
+        }
+      );
+      res.send({ msg: "Teacher Updated Successfully" });
     } else {
-      res.status(404).send({ msg: "No Student Found" });
+      res.status(404).send({ msg: "No Teacher Found" });
     }
   } catch (err) {
     res.status(500).send({ msg: "Internal Server Error" });
@@ -89,26 +102,21 @@ teachersRouter.put("/:teacherId", (req, res) => {
 });
 
 // Delete a single teacher
-teachersRouter.delete("/", (req, res) => {
-  console.log("Info About Request", req);
-
+teachersDbRouter.delete("/", async (req, res) => {
   const teacherId = req.query.teacherId;
-
-  console.log("Coming From Query param", teacherId);
 
   try {
     // Logic to delete a single teacher
-    const index = teachers.findIndex((stu) => stu.id === teacherId);
-
-    if (index !== -1) {
-      teachers.splice(index, 1);
-      res.send({ msg: "Student Deleted Successfully" });
+    const teacher = await collection.findOne({ id: teacherId });
+    if (teacher) {
+      await collection.deleteOne({ id: teacherId });
+      res.send({ msg: "Teacher Deleted Successfully" });
     } else {
-      res.status(404).send({ msg: "No Student Found" });
+      res.status(404).send({ msg: "No Teacher Found" });
     }
   } catch (err) {
     res.status(500).send({ msg: "Internal Server Error" });
   }
 });
 
-export default teachersRouter;
+export default teachersDbRouter;
