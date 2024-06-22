@@ -1,12 +1,19 @@
 import { MongoClient } from "mongodb";
+import dotenv from "dotenv";
+
+dotenv.config();
+
+// console.log("################################");
+// console.log(process.env);
+// console.log("################################");
 
 const dbUrl = "localhost:27017";
-const dbName = "fsd56we-tamil";
+const dbName = process.env.DB_NAME || "local-fsd56we-tamil";
 
 // username & password will be required on connecting to cloud DB
-const dbPassword = "lqDTRKl5ciQflD0C";
-const dbUsr = "sanjaysaravanan00007";
-const dbCluster = "cluster0.yxr2hty.mongodb.net";
+const dbPassword = process.env.DB_PASSWORD || "";
+const dbUsr = process.env.DB_USERNAME || "";
+const dbCluster = process.env.DB_CLUSTER || "";
 
 // Creating a client instance
 const localUrl = `mongodb://${dbUrl}`;
