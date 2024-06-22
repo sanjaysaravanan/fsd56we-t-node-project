@@ -1,4 +1,5 @@
 import express from "express";
+import cors from "cors";
 
 import connectToDb from "./db-utils/mongodb-connection.js";
 
@@ -6,15 +7,21 @@ import connectToDb from "./db-utils/mongodb-connection.js";
 import teachersRouter from "./routes/teachers.js";
 import studentsDbRouter from "./routes/students-db.js";
 import teachersDbRouter from "./routes/teachers-db.js";
+import connectViaMongoose from "./db-utils/mongoose-connection.js";
 
 const server = express();
 
 // Body Parsing Middleware
 server.use(express.json());
+// using the cors middleware to make our apis CORS complaint
+server.use(cors());
 
 // Connecting to the DB before server starts
 // Top Level Await
 await connectToDb();
+
+// Mongoose Connection
+await connectViaMongoose();
 
 server.get("/", (req, res) => {
   res.send({ message: "Hello FSD56WE-TAMIL" });

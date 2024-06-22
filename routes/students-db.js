@@ -1,6 +1,7 @@
 import express from "express";
 
 import { db } from "../db-utils/mongodb-connection.js";
+import { studentModel } from "../db-utils/models.js";
 
 const studentsDbRouter = express.Router();
 
@@ -10,14 +11,29 @@ const collection = db.collection("students");
 studentsDbRouter.post("/", async (req, res) => {
   try {
     const payload = req.body;
+    // MongoDB Logic ( without object modelling - No Payload Validation )
+    // await collection.insertOne({
+    //   ...payload,
+    //   id: Date.now().toString(),
+    //   teacherId: null,
+    // });
 
-    await collection.insertOne({
+    // Mongoose Logic ( with Object Modelling means payload validation )
+    const student = new studentModel({
       ...payload,
       id: Date.now().toString(),
       teacherId: null,
     });
 
-    res.status(201).send({ msg: "Student Created Successfully" });
+    try {
+      await student.save(); // validate and insert the student into the database
+      // for only validation we can use student.validate() instead
+
+      res.status(201).send({ msg: "Student Created Successfully" });
+    } catch (e) {
+      console.log(e);
+      res.status(400).send({ msg: "Please enter all the fields for Student" });
+    }
   } catch (e) {
     console.log(e);
     res.status(500).send({ msg: "Internal Server Error" });
@@ -27,9 +43,13 @@ studentsDbRouter.post("/", async (req, res) => {
 // Get all the students
 studentsDbRouter.get("/", async (req, res) => {
   try {
-    const students = await collection
-      .find({}, { projection: { _id: 0 } })
-      .toArray();
+    // MongoDB
+    // const students = await collection
+    //   .find({}, { projection: { _id: 0 } })
+    //   .toArray();
+
+    // Mongoose
+    const students = await studentModel.find({}, { _id: 0 });
 
     res.send({ msg: "Info about all the Students", students });
   } catch (e) {
@@ -42,6 +62,7 @@ studentsDbRouter.get("/", async (req, res) => {
 studentsDbRouter.get("/:studentId", async (req, res) => {
   try {
     const studentId = req.params.studentId;
+
     const student = await collection.findOne(
       { id: studentId },
       { projection: { _id: 0 } }
