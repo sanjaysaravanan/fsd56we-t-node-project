@@ -8,6 +8,7 @@ import teachersRouter from "./routes/teachers.js";
 import studentsDbRouter from "./routes/students-db.js";
 import teachersDbRouter from "./routes/teachers-db.js";
 import connectViaMongoose from "./db-utils/mongoose-connection.js";
+import authRouter from "./routes/auth.js";
 
 const server = express();
 
@@ -46,6 +47,7 @@ server.post("/", (req, res) => {
 //          base-path    Router Obje
 server.use("/students", studentsDbRouter);
 server.use("/teachers", teachersDbRouter);
+server.use("/auth", authRouter);
 
 const port = 8000;
 

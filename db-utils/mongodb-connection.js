@@ -1,7 +1,7 @@
 import { MongoClient } from "mongodb";
 import dotenv from "dotenv";
 
-dotenv.config();
+dotenv.config(); // only in local we are loading the .env into the system
 
 // console.log("################################");
 // console.log(process.env);

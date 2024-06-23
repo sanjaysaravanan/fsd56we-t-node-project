@@ -48,4 +48,28 @@ const teacherSchema = new Schema({
 });
 const teacherModel = new model("teacher", teacherSchema, "teachers");
 
-export { studentModel, teacherModel };
+const userSchema = new Schema({
+  name: {
+    type: "string",
+    required: true,
+  },
+  email: {
+    type: "string",
+    required: true,
+  },
+  mobile: {
+    type: "string",
+    required: true,
+  },
+  password: {
+    type: "string",
+  },
+  dob: {
+    type: "string",
+    required: true,
+  },
+});
+
+const userModel = new model("user", userSchema, "users");
+
+export { studentModel, teacherModel, userModel };
