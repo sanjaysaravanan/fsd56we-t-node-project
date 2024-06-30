@@ -3,6 +3,7 @@ import bcrypt from "bcrypt";
 import jwt from "jsonwebtoken";
 import { userModel } from "../db-utils/models.js";
 import { db } from "../db-utils/mongodb-connection.js";
+import { transporter, mailOptions } from "../mail-utils/mail-utils.js";
 
 const authRouter = express.Router();
 
@@ -23,6 +24,11 @@ authRouter.post("/register", async (req, res) => {
         const user = new userModel(tempData);
 
         await user.save(); // will validate the schema and insert the record into the DB
+
+        await transporter.sendMail({
+          ...mailOptions,
+          to: userDetails.email,
+        });
 
         res.send({ msg: "User created successfully" });
       }
