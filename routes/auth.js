@@ -1,5 +1,6 @@
 import express from "express";
 import bcrypt from "bcrypt";
+import jwt from "jsonwebtoken";
 import { userModel } from "../db-utils/models.js";
 import { db } from "../db-utils/mongodb-connection.js";
 
@@ -48,7 +49,12 @@ authRouter.post("/login", async (req, res) => {
           const tempUser = { ...userObj };
 
           delete tempUser.password;
-          res.send({ msg: "Login successful", user: { ...userObj } });
+
+          const token = jwt.sign(tempUser, process.env.JWT_SECRET, {
+            expiresIn: process.env.EXPIRY_TIME,
+          });
+
+          res.send({ msg: "Login successful", userToken: token });
         } else {
           res.status(401).send({ msg: "Invalid username or password" });
         }

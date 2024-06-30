@@ -68,6 +68,10 @@ const userSchema = new Schema({
     type: "string",
     required: true,
   },
+  role: {
+    type: "string", // student or teacher
+    required: true,
+  },
 });
 
 const userModel = new model("user", userSchema, "users");
