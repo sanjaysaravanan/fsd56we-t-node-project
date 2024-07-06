@@ -31,9 +31,15 @@ const logger = (req, res, next) => {
 const authAPI = (req, res, next) => {
   const token = req.headers["authorization"];
 
-  if (Boolean(token)) {
-    next();
-  } else {
+  try {
+    if (Boolean(token)) {
+      jwt.verify(token, process.env.JWT_SECRET);
+      next();
+    } else {
+      res.status(401).send({ msg: "Unauthorized" });
+    }
+  } catch (e) {
+    console.error(e);
     res.status(401).send({ msg: "Unauthorized" });
   }
 };

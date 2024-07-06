@@ -72,6 +72,10 @@ const userSchema = new Schema({
     type: "string", // student or teacher
     required: true,
   },
+  isVerified: {
+    type: "boolean",
+    required: true,
+  },
 });
 
 const userModel = new model("user", userSchema, "users");

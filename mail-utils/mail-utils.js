@@ -12,9 +12,10 @@ const transporter = nodemailer.createTransport({
   },
 });
 
+// Simple Mail Options which can be overridden & used anytime
 const mailOptions = {
   from: "sanjaysaravanan00007@gmail.com",
-  to: ["sanjaysaravanan1997@gmail.com"],
+  to: [],
   subject: "Email Testing",
   text: "Sending Email are so easy with nodemailer & Gmail",
 };

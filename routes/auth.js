@@ -18,6 +18,7 @@ authRouter.post("/register", async (req, res) => {
         const tempData = {
           ...userDetails,
           password: hash,
+          isVerified: false,
         };
 
         // store the above user into the DB
@@ -25,9 +26,20 @@ authRouter.post("/register", async (req, res) => {
 
         await user.save(); // will validate the schema and insert the record into the DB
 
+        const veifyToken = jwt.sign(
+          { email: userDetails.email },
+          process.env.JWT_SECRET,
+          { expiresIn: "3m" }
+        );
+
+        const verifyLink = `${process.env.FE_URL}/verify-user-fe?token=${veifyToken}`;
         await transporter.sendMail({
           ...mailOptions,
-          to: userDetails.email,
+          to: [...mailOptions.to, userDetails.email],
+          subject: "Hey, Welcome to the Application !!!",
+          text:
+            "Welcome to Our Management Application, to Continue Please verify Your email by clicking on the below link, " +
+            verifyLink,
         });
 
         res.send({ msg: "User created successfully" });
@@ -71,6 +83,23 @@ authRouter.post("/login", async (req, res) => {
   } catch (err) {
     console.error(err);
     res.status(500).send({ msg: "Internal Server Error" });
+  }
+});
+
+authRouter.get("/verify-user", async (req, res) => {
+  const token = req.headers["authorization"];
+  try {
+    const data = jwt.verify(token, process.env.JWT_SECRET);
+
+    const { email } = data;
+
+    await db
+      .collection("users")
+      .updateOne({ email }, { $set: { isVerified: true } });
+    res.send({ msg: "User Verified Successfully" });
+  } catch (err) {
+    console.error(err);
+    res.status(400).send({ msg: "Link Expired" });
   }
 });
 
